@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MM TET ACADEMY 9732974125 CTET MOCK TEST 2</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; margin: 0; padding: 20px; display: flex; justify-content: center; }
+        .container { max-width: 800px; width: 100%; background: #ffffff; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        h1, h2 { text-align: center; color: #1e3a8a; }
+        .form-group { margin-bottom: 15px; text-align: left; }
+        label { font-weight: bold; display: block; margin-bottom: 5px; color: #334155; }
+        input[type="text"], input[type="tel"] { width: 100%; padding: 12px; border: 2px solid #cbd5e1; border-radius: 8px; font-size: 16px; outline: none; box-sizing: border-box; }
+        input:focus { border-color: #3b82f6; }
+        .btn { background: #2563eb; color: white; padding: 12px 24px; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; transition: 0.3s; font-weight: bold; width: 100%; margin-top: 10px; display: block; }
+        .btn:hover { background: #1d4ed8; }
+        .btn-success { background: #16a34a; }
+        .btn-success:hover { background: #15803d; }
+        #timer { font-size: 20px; font-weight: bold; color: #dc2626; text-align: center; position: sticky; top: 10px; background: white; padding: 10px; border: 2px solid #dc2626; border-radius: 8px; display: inline-block; left: 50%; transform: translateX(-50%); z-index: 100; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .question-block { margin-bottom: 25px; padding: 20px; border-radius: 8px; background: #f8fafc; border-left: 5px solid #3b82f6; }
+        .options-label { display: block; margin: 10px 0; cursor: pointer; padding: 10px; border-radius: 6px; background: #ffffff; border: 1px solid #e2e8f0; }
+        input[type="radio"] { margin-right: 10px; transform: scale(1.2); }
+        .hidden { display: none; }
+        #result-box { background: #eff6ff; padding: 20px; border-radius: 10px; border: 2px solid #bfdbfe; margin-bottom: 25px; text-align: center; }
+        .correct-ans { background: #dcfce7 !important; border-color: #22c55e !important; color: #15803d; font-weight: bold; }
+        .wrong-ans { background: #fee2e2 !important; border-color: #ef4444 !important; color: #b91c1c; font-weight: bold; }
+        .badge { display: inline-block; padding: 2px 8px; font-size: 12px; font-weight: bold; border-radius: 4px; margin-left: 10px; color: white; }
+        .badge-success { background: #22c55e; }
+        .badge-danger { background: #ef4444; }
+        #error-msg { color: #dc2626; text-align: center; font-weight: bold; margin-top: 10px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- Screen 1: Login / Registration -->
+    <div id="login-screen">
+        <h1>MM TET ACADEMY 9732974125 CTET MOCK TEST 2</h1>
+        <h2>পরীক্ষা শুরু করতে আপনার তথ্য দিন</h2>
+        <div class="form-group">
+            <label for="student-name">আপনার নাম:</label>
+            <input type="text" id="student-name" placeholder="নাম লিখুন..." required>
+        </div>
+        <div class="form-group">
+            <label for="student-phone">মোবাইল নম্বর:</label>
+            <input type="tel" id="student-phone" placeholder="১০ ডিজিট নম্বর..." required>
+        </div>
+        <div id="error-msg"></div>
+        <button class="btn" id="start-btn" onclick="validateAndStart()">পরীক্ষা শুরু করুন</button>
+    </div>
+
+    <!-- Screen 2: Quiz Engine -->
+    <div id="quiz-screen" class="hidden">
+        <div id="timer">সময় বাকি: 40:00</div>
+        <h1>মক টেস্ট (৫০ টি প্রশ্ন - ৫০ নম্বর)</h1>
+        <p style="text-align: center; color: #64748b;">(সঠিক উত্তর: +১ | কোনো নেগেটিভ মার্কিং নেই)</p>
+        <hr>
+        <form id="quiz-form">
+            <div id="questions-container"></div>
+            <button type="button" class="btn btn-success" onclick="submitTest(false)">মক টেস্ট সাবমিট করুন</button>
+        </form>
+    </div>
+
+    <!-- Screen 3: Result & Answer Sheet Review -->
+    <div id="result-screen" class="hidden">
+        <h1>পরীক্ষার ফলাফল ও রিভিউ</h1>
+        <div id="result-box"></div>
+        <hr>
+        <div id="review-container"></div>
+    </div>
+</div>
+
+<script>
+    const questionsData = [
+        { question: "Which of the following best describes development?", options: ["Development occurs only during childhood", "Development is a continuous process", "Development is completely determined by heredity", "Development means only physical growth"], ans: "B" },
+        { question: "পিয়াজের মতে, ৭–১১ বছর বয়সের শিশুর চিন্তন কোন পর্যায়ের বৈশিষ্ট্য বহন করে?", options: ["সংবেদন-সঞ্চালন পর্যায়", "প্রাক্-সাংক্রিয় পর্যায়", "মূর্ত সাংক্রিয় পর্যায়", "আনুষ্ঠানিক সাংক্রিয় পর্যায়"], ans: "C" },
+        { question: "According to Vygotsky, the gap between what a learner can do independently and what the learner can do with assistance is called:", options: ["Cognitive Conflict", "Zone of Proximal Development", "Schema", "Reinforcement"], ans: "B" },
+        { question: "একজন শিক্ষক যখন শিক্ষার্থীকে কোনো কাজ সম্পন্ন করার জন্য ধাপে ধাপে সাময়িক সহায়তা দেন, তাকে কী বলা হয়?", options: ["Conditioning", "Scaffolding", "Punishment", "Assessment"], ans: "B" },
+        { question: "Which of the following is an example of intrinsic motivation?", options: ["Studying to get a prize", "Studying to avoid punishment", "Studying because the subject is interesting", "Studying to get higher marks than friends"], ans: "C" },
+        { question: "শিশুর বিকাশে বংশগতি ও পরিবেশের সম্পর্ক সম্পর্কে কোন বক্তব্যটি সঠিক?", options: ["শুধুমাত্র বংশগতি গুরুত্বপূর্ণ", "শুধুমাত্র পরিবেশ গুরুত্বপূর্ণ", "উভয়ই পারস্পরিকভাবে প্রভাব বিস্তার করে", "কোনোটিই গুরুত্বপূর্ণ নয়"], ans: "C" },
+        { question: "A child makes repeated mistakes while solving a mathematical problem. What should a teacher do first?", options: ["Punish the child", "Label the child as weak", "Analyse the child's errors", "Ask the child to leave the class"], ans: "C" },
+        { question: "অন্তর্ভুক্তিমূলক শিক্ষার প্রধান উদ্দেশ্য কী?", options: ["বিশেষ চাহিদাসম্পন্ন শিশুদের আলাদা করা", "সকল শিশুকে একসঙ্গে শেখার সুযোগ দেওয়া", "শুধুমাত্র মেধাবী শিশুদের শিক্ষা দেওয়া", "দুর্বল শিক্ষার্থীদের বাদ দেওয়া"], ans: "B" },
+        { question: "Which theory of intelligence was proposed by Howard Gardner?", options: ["Two-factor theory", "Multiple Intelligence Theory", "Triarchic Theory", "Hierarchical Theory"], ans: "B" },
+        { question: "শিক্ষার্থীদের পূর্বজ্ঞান জানার জন্য কোন পদ্ধতিটি সবচেয়ে কার্যকর?", options: ["শুধুমাত্র বার্ষিক পরীক্ষা", "আলোচনা ও প্রশ্নোত্তর", "শাস্তি প্রদান", "শুধুমাত্র বাড়ির কাজ"], ans: "B" },
+        { question: "According to Kohlberg, moral development is primarily concerned with:", options: ["Physical growth", "Moral reasoning", "Language development", "Motor development"], ans: "B" },
+        { question: "একটি শিশু কোনো সমস্যার সমাধান নিজের পূর্ব অভিজ্ঞতার সঙ্গে যুক্ত করে। এটি কোন দৃষ্টিভঙ্গির সঙ্গে সামঞ্জস্যপূর্ণ?", options: ["Behaviorism", "Constructivism", "Maturationism", "Classical conditioning"], ans: "B" },
+        { question: "Which classroom practice is most consistent with a constructivist approach?", options: ["Teacher gives all the answers", "Students actively construct knowledge through experiences", "Students memorise the textbook", "Teacher discourages questions"], ans: "B" },
+        { question: "Formative assessment-এর প্রধান উদ্দেশ্য কী?", options: ["শিক্ষার্থীদের চূড়ান্তভাবে র‌্যাঙ্ক করা", "শেখার সময় অগ্রগতি পর্যবেক্ষণ করে উন্নতি করা", "শুধুমাত্র সার্টিফিকেট প্রদান করা", "শিক্ষার্থীদের মধ্যে প্রতিযোগিতা সৃষ্টি করা"], ans: "B" },
+        { question: "Which of the following is a higher-order thinking skill?", options: ["Remembering", "Recognising", "Recalling", "Analysing"], ans: "D" },
+        { question: "একজন শিক্ষক বিভিন্ন সক্ষমতার শিক্ষার্থীদের জন্য বিভিন্ন ধরনের কাজ নির্ধারণ করেন। এটি কী নামে পরিচিত?", options: ["Rote learning", "Differentiated instruction", "Programmed learning", "Drill method"], ans: "B" },
+        { question: "Dyslexia is primarily associated with difficulty in:", options: ["Reading", "Walking", "Hearing", "Drawing"], ans: "A" },
+        { question: "শিশুর সৃজনশীলতা বিকাশের জন্য কোনটি সবচেয়ে উপযুক্ত?", options: ["একটিমাত্র নির্দিষ্ট উত্তর গ্রহণ করা", "উন্মুক্ত প্রশ্ন করা", "উত্তর মুখস্থ করানো", "ভুলের জন্য শাস্তি দেওয়া"], ans: "B" },
+        { question: "Which of the following is the best example of peer learning?", options: ["Teacher lectures throughout the class", "Students learn collaboratively from one another", "Students study only at home", "Students memorise the textbook individually"], ans: "B" },
+        { question: "শিক্ষার্থীর আত্মবিশ্বাস বৃদ্ধির জন্য শিক্ষক কী করবেন?", options: ["অন্য শিক্ষার্থীর সঙ্গে তুলনা করবেন", "ভুলের জন্য অপমান করবেন", "গঠনমূলক ও ইতিবাচক feedback দেবেন", "সবসময় বেশি নম্বর দেবেন"], ans: "C" },
+        { question: "What is the main purpose of diagnostic assessment?", options: ["To identify learning difficulties", "To rank students", "To award certificates", "To conduct the final examination"], ans: "A" },
+        { question: "একটি শ্রেণিতে শিক্ষার্থীদের বুদ্ধিবৃত্তিক ও শেখার ক্ষমতার মধ্যে পার্থক্য থাকা কী নির্দেশ করে?", options: ["সব শিশুর শেখার পদ্ধতি একই", "শিক্ষার্থীদের মধ্যে individual differences রয়েছে", "দুর্বল শিক্ষার্থীরা শিখতে পারে না", "শুধুমাত্র বুদ্ধিমান শিশুরাই শিক্ষা গ্রহণ করতে পারে"], ans: "B" },
+        { question: "Which role of a teacher is most appropriate in a learner-centred classroom?", options: ["Dictator", "Facilitator", "Examiner only", "Lecturer only"], ans: "B" },
+        { question: "একজন শিক্ষার্থী একটি সমস্যার একাধিক সমাধান দেওয়ার চেষ্টা করছে। শিক্ষক কীভাবে প্রতিক্রিয়া জানাবেন?", options: ["শুধুমাত্র বইয়ের উত্তর গ্রহণ করবেন", "তার বিভিন্ন চিন্তার পথকে উৎসাহিত করবেন", "তাকে থামিয়ে দেবেন", "তাকে মুখস্থ করতে বলবেন"], ans: "B" },
+        { question: "Which statement about children's learning is most appropriate?", options: ["All children learn at exactly the same pace", "Learning is influenced by prior experiences", "Learning depends only on intelligence", "Learning takes place only inside the classroom"], ans: "B" },
+        { question: "Choose the synonym of “Rapid”.", options: ["Slow", "Quick", "Weak", "Late"], ans: "B" },
+        { question: "Choose the antonym of “Ancient”.", options: ["Old", "Historic", "Modern", "Traditional"], ans: "C" },
+        { question: "Fill in the blank with the correct article: “He is ___ honest man.”", options: ["a", "an", "the", "no article"], ans: "B" },
+        { question: "Choose the correct preposition: “She is good ___ Mathematics.”", options: ["in", "at", "on", "for"], ans: "B" },
+        { question: "Choose the correct form of the sentence: “He do not like tea.”", options: ["He does not likes tea.", "He do not likes tea.", "He does not like tea.", "He did not likes tea."], ans: "C" },
+        { question: "Choose the correctly spelt word.", options: ["Recieve", "Receive", "Receeve", "Receve"], ans: "B" },
+        { question: "Choose the correct passive voice: “The boy broke the window.”", options: ["The window broke the boy.", "The window was broken by the boy.", "The window is broken by the boy.", "The boy was broken by the window."], ans: "B" },
+        { question: "Choose the correct indirect speech: She said, “I am happy.”", options: ["She said that I am happy.", "She said that she was happy.", "She says that she was happy.", "She said that she is happy."], ans: "B" },
+        { question: "Choose the correct question tag: “You are coming, ___?”", options: ["are you?", "aren't you?", "don't you?", "isn't you?"], ans: "B" },
+        { question: "Choose the correct meaning of the idiom “A piece of cake”.", options: ["Very difficult", "Very expensive", "Very easy", "Very dangerous"], ans: "C" },
+        { question: "Which activity is most effective for developing speaking skills in an English classroom?", options: ["Copying a paragraph", "Memorising grammar rules", "Pair conversation and role play", "Silent reading"], ans: "C" },
+        { question: "The primary objective of teaching English at the elementary level should be to develop:", options: ["Only grammatical accuracy", "Communicative competence", "Translation ability only", "Memorisation skills"], ans: "B" },
+        { question: "A learner makes grammatical errors while speaking English. What should the teacher do?", options: ["Stop the learner immediately", "Humiliate the learner", "Provide supportive and appropriate feedback", "Prevent the learner from speaking"], ans: "C" },
+        { question: "Which activity is most suitable for developing listening skills?", options: ["Listening to a story and answering questions", "Copying sentences from the board", "Memorising vocabulary", "Writing a paragraph"], ans: "A" },
+        { question: "In a learner-centred English classroom, the teacher should primarily act as a:", options: ["Controller", "Facilitator", "Lecturer", "Examiner"], ans: "B" },
+        { question: "‘অতি + আচার = অত্যাচার’— এখানে কোন ধরনের সন্ধি ঘটেছে?", options: ["স্বরসন্ধি", "ব্যঞ্জনসন্ধি", "বিসর্গসন্ধি", "নিপাতন সিদ্ধ"], ans: "A" },
+        { question: "‘রাজপুত্র’ শব্দটির সমাস নির্ণয় করুন।", options: ["দ্বন্দ্ব সমাস", "কর্মধারয় সমাস", "ষষ্ঠী তৎপুরুষ সমাস", "বহুব্রীহি সমাস"], ans: "C" },
+        { question: "‘রাহুল স্কুলে যায়’— বাক্যে ‘স্কুলে’ কোন কারক?", options: ["কর্তৃকারক", "কর্মকারক", "অধিকরণ কারক", "অপাদান কারক"], ans: "C" },
+        { question: "নিচের কোন বাক্যে ‘কে’ অনুসর্গটি কর্তৃকারক নির্দেশ করেছে?", options: ["আমি তাকে বইটি দিয়েছি।", "রাহুলকে ডাকো।", "আমাকে আজ যেতে হবে।", "শিক্ষককে ছাত্রটি প্রশ্ন করল।"], ans: "C" },
+        { question: "‘সে দ্রুত দৌড়ায়’— বাক্যে ‘দ্রুত’ কোন পদ?", options: ["বিশেষ্য", "বিশেষণ", "ক্রিয়াবিশেষণ", "সর্বনাম"], ans: "C" },
+        { question: "প্রাথমিক স্তরে বাংলা ভাষা শেখানোর প্রধান উদ্দেশ্য কী হওয়া উচিত?", options: ["শুধু ব্যাকরণ মুখস্থ করানো", "ভাষার মাধ্যমে কার্যকর যোগাযোগের দক্ষতা গড়ে তোলা", "শুধু বানান শেখানো", "শুধু পরীক্ষায় নম্বর পাওয়ার জন্য প্রস্তুত করা"], ans: "B" },
+        { question: "কোনো শিক্ষার্থী পড়ার সময় বারবার ভুল করলে শিক্ষক কী করবেন?", options: ["তাকে সবার সামনে অপমান করবেন", "পড়তে নিষেধ করবেন", "ভুলের কারণ বুঝে উপযুক্ত সহায়তা দেবেন", "তাকে শাস্তি দেবেন"], ans: "C" },
+        { question: "বাংলা ভাষার শ্রবণ দক্ষতা বৃদ্ধির জন্য কোন কার্যক্রমটি সবচেয়ে কার্যকর?", options: ["শুধুমাত্র অনুচ্ছেদ লিখতে দেওয়া", "গল্প বা বক্তব্য শুনিয়ে প্রশ্ন করা", "ব্যাকরণ মুখস্থ করানো", "বই থেকে শব্দ কপি করানো"], ans: "B" },
+        { question: "ভাষা শিক্ষায় শিক্ষার্থীদের নিজেদের অভিজ্ঞতা প্রকাশের সুযোগ দেওয়ার প্রধান সুবিধা কী?", options: ["মুখস্থবিদ্যা বৃদ্ধি পায়", "ভাষার স্বাভাবিক ব্যবহার ও আত্মবিশ্বাস বৃদ্ধি পায়", "শিক্ষক কম পড়ান", "ব্যাকরণ শেখা বন্ধ হয়ে যায়"], ans: "B" },
+        { question: "একজন বাংলা শিক্ষক গল্প পড়ানোর আগে শিক্ষার্থীদের গল্পের বিষয়বস্তু অনুমান করতে বলেন। এই কার্যক্রমটি প্রধানত কোন দক্ষতা বিকাশ করে?", options: ["পূর্বানুমান ও পাঠ-বোধ", "শুধুমাত্র বানান", "শুধুমাত্র হাতের লেখা", "শুধুমাত্র ব্যাকরণ"], ans: "A" }
+    ];
+
+    // REPLACE THIS URL WITH YOUR GOOGLE APPS SCRIPT WEB APP URL
+    const googleSheetUrl = "https://script.google.com/macros/s/AKfycbxusNjns-y2vYgmVwf3wFdva1IeYltnmKALho8mUYYH_QOBKzci4l-vYgw7ei8711E0/exec";
+
+    let studentName = "";
+    let studentPhone = "";
+    let timeRemaining = 40 * 60; // 40 minutes in seconds
+    let timerInterval;
+
+    function validateAndStart() {
+        const nameInput = document.getElementById('student-name').value.trim();
+        const phoneInput = document.getElementById('student-phone').value.trim();
+        const errorMsg = document.getElementById('error-msg');
+
+        errorMsg.innerText = "";
+
+        if (!nameInput || !phoneInput) {
+            errorMsg.innerText = "দয়া করে নাম এবং মোবাইল নম্বর দুটিই প্রদান করুন।";
+            return;
+        }
+
+        if (phoneInput.length < 10) {
+            errorMsg.innerText = "সঠিক ১০ ডিজিটের মোবাইল নম্বর প্রদান করুন।";
+            return;
+        }
+
+        studentName = nameInput;
+        studentPhone = phoneInput;
+
+        document.getElementById('login-screen').className = 'hidden';
+        document.getElementById('quiz-screen').className = '';
+
+        renderQuestions();
+        startTimer();
+    }
+
+    function renderQuestions() {
+        const container = document.getElementById('questions-container');
+        container.innerHTML = '';
+
+        questionsData.forEach((item, index) => {
+            const qNum = index + 1;
+            const optionLetters = ["A", "B", "C", "D"];
+            let optionsHTML = '';
+
+            item.options.forEach((opt, i) => {
+                optionsHTML += `
+                    <label class="options-label" id="label-q${qNum}-${optionLetters[i]}">
+                        <input type="radio" name="q${qNum}" value="${optionLetters[i]}">
+                        <strong>${optionLetters[i]}.</strong> ${opt}
+                    </label>
+                `;
+            });
+
+            const qBlock = document.createElement('div');
+            qBlock.className = 'question-block';
+            qBlock.innerHTML = `<h3>প্রশ্ন ${qNum}: ${item.question}</h3>${optionsHTML}`;
+            container.appendChild(qBlock);
+        });
+    }
+
+    function startTimer() {
+        timerInterval = setInterval(() => {
+            timeRemaining--;
+            let mins = Math.floor(timeRemaining / 60);
+            let secs = timeRemaining % 60;
+            let formattedMins = mins < 10 ? '0' + mins : mins;
+            let formattedSecs = secs < 10 ? '0' + secs : secs;
+            document.getElementById('timer').innerText = `সময় বাকি: ${formattedMins}:${formattedSecs}`;
+
+            if (timeRemaining <= 0) {
+                clearInterval(timerInterval);
+                alert("৪০ মিনিট সময় শেষ! আপনার টেস্ট স্বয়ংক্রিয়ভাবে সাবমিট হচ্ছে।");
+                submitTest(true);
+            }
+        }, 1000);
+    }
+
+    function submitTest(isAutoSubmit) {
+        if (!isAutoSubmit && !confirm("আপনি কি নিশ্চিত টেস্ট সাবমিট করতে চান?")) return;
+        clearInterval(timerInterval);
+
+        let correctCount = 0;
+        let wrongCount = 0;
+        let unansweredCount = 0;
+
+        document.getElementById('quiz-screen').className = 'hidden';
+        document.getElementById('result-screen').className = '';
+
+        const reviewContainer = document.getElementById('review-container');
+        reviewContainer.innerHTML = '<h2>উত্তরপত্র পর্যালোচনা (Preview)</h2>';
+
+        questionsData.forEach((item, index) => {
+            const qNum = index + 1;
+            const selectedOpt = document.querySelector(`input[name="q${qNum}"]:checked`);
+            const userAns = selectedOpt ? selectedOpt.value : null;
+
+            if (userAns === null) unansweredCount++;
+            else if (userAns === item.ans) correctCount++;
+            else wrongCount++;
+
+            const cloneBlock = document.getElementsByClassName('question-block')[index].cloneNode(true);
+            reviewContainer.appendChild(cloneBlock);
+
+            const correctLabel = reviewContainer.querySelector(`#label-q${qNum}-${item.ans}`);
+            if (correctLabel) {
+                correctLabel.className += ' correct-ans';
+                correctLabel.innerHTML += ' <span class="badge badge-success">সঠিক উত্তর</span>';
+            }
+            if (userAns && userAns !== item.ans) {
+                const wrongLabel = reviewContainer.querySelector(`#label-q${qNum}-${userAns}`);
+                if (wrongLabel) {
+                    wrongLabel.className += ' wrong-ans';
+                    wrongLabel.innerHTML += ' <span class="badge badge-danger">আপনার উত্তর</span>';
+                }
+            }
+        });
+
+        let finalScore = correctCount * 1;
+
+        document.getElementById('result-box').innerHTML = `
+            <h3>পরীক্ষার্থীর নাম: ${studentName}</h3>
+            <p>মোবাইল নম্বর: ${studentPhone}</p>
+            <p style="font-size: 24px; font-weight:bold; color:#1e3a8a;">প্রাপ্ত নম্বর: ${finalScore} / ${questionsData.length}</p>
+            <p>সঠিক: <span style="color:green; font-weight:bold;">${correctCount}</span> | ভুল: <span style="color:red; font-weight:bold;">${wrongCount}</span> | উত্তর দেওয়া হয়নি: ${unansweredCount}</p>
+        `;
+
+        if (googleSheetUrl && googleSheetUrl !== "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL") {
+            const payload = JSON.stringify({
+                name: studentName,
+                phone: studentPhone,
+                score: finalScore,
+                correct: correctCount,
+                wrong: wrongCount
+            });
+
+            fetch(googleSheetUrl, {
+                method: "POST",
+                mode: "no-cors",
+                headers: {
+                    "Content-Type": "text/plain"
+                },
+                body: payload
+            })
+            .then(() => console.log("Google Sheet Request Sent!"))
+            .catch(err => console.error("Google Sheet Error: ", err));
+        }
+    }
+</script>
+</body>
+</html>
